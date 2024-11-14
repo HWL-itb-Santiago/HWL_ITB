@@ -32,12 +32,17 @@ namespace UnityEngine.XR.Interaction.Toolkit.Inputs
         // Start is called before the first frame update
         void Start()
         {
+            // Asignacion referencia left controller+
             leftController = CharacterControllManager.instance.leftController;
             rightController = CharacterControllManager.instance.rightController;
+            //Suscripcion de los eventos
             if (leftController != null && rightController != null)
             {
-                OnSuscribedEvents(rightController, Hand.Right);
-                OnSuscribedEvents(leftController, Hand.Left);
+                OnSuscribedEvents(rightController.selectActionValue.action, OnGripHand, Hand.Right);
+                OnSuscribedEvents(rightController.activateActionValue.action, OnTriggerHand, Hand.Right);
+
+                OnSuscribedEvents(leftController.selectActionValue.action, OnGripHand, Hand.Left);
+                OnSuscribedEvents(leftController.activateActionValue.action, OnTriggerHand, Hand.Left);
             }
             else
             {
@@ -45,15 +50,11 @@ namespace UnityEngine.XR.Interaction.Toolkit.Inputs
             }
         }
 
-        private void OnSuscribedEvents(ActionBasedController controller, Hand hand)
+        private void OnSuscribedEvents(InputAction action, Action<InputAction.CallbackContext, Hand> callback, Hand hand)
         {
-            controller.selectActionValue.action.started -= callback => OnGripHand(callback, hand);
-            controller.selectActionValue.action.performed += callback => OnGripHand(callback, hand);
-            controller.selectActionValue.action.canceled += callback => OnGripHand(callback, hand);
-
-            controller.activateActionValue.action.started -= callback => OnTriggerHand(callback, hand);
-            controller.activateActionValue.action.performed += callback => OnTriggerHand(callback, hand);
-            controller.activateActionValue.action.canceled += callback => OnTriggerHand(callback, hand);
+            action.started += context => callback(context, hand);
+            action.performed += context => callback(context, hand);
+            action.canceled += context => callback(context, hand);
         }
         // Update is called once per frame
         void Update()
