@@ -23,6 +23,8 @@ namespace UnityEngine.XR.Interaction.Toolkit.Inputs
         // XRController rightController;
         private ActionBasedController rightController;
 
+        public enum Hand {Left, Right};
+
         private void Awake()
         {
 
@@ -34,15 +36,8 @@ namespace UnityEngine.XR.Interaction.Toolkit.Inputs
             rightController = CharacterControllManager.instance.rightController;
             if (leftController != null && rightController != null)
             {
-                leftController.selectActionValue.action.performed += OnLeftGripHand;
-                leftController.selectActionValue.action.canceled += OnLeftGripHand;
-                leftController.activateActionValue.action.performed += OnLeftTriggerHand;
-                leftController.activateActionValue.action.canceled += OnLeftTriggerHand;
-
-                rightController.selectActionValue.action.performed += OnRightGripHand;
-                rightController.selectActionValue.action.canceled += OnRightGripHand;
-                rightController.activateActionValue.action.performed += OnRightTriggerHand;
-                rightController.activateActionValue.action.canceled += OnRightTriggerHand;
+                OnSuscribedEvents(rightController, Hand.Right);
+                OnSuscribedEvents(leftController, Hand.Left);
             }
             else
             {
@@ -50,6 +45,16 @@ namespace UnityEngine.XR.Interaction.Toolkit.Inputs
             }
         }
 
+        private void OnSuscribedEvents(ActionBasedController controller, Hand hand)
+        {
+            controller.selectActionValue.action.started -= callback => OnGripHand(callback, hand);
+            controller.selectActionValue.action.performed += callback => OnGripHand(callback, hand);
+            controller.selectActionValue.action.canceled += callback => OnGripHand(callback, hand);
+
+            controller.activateActionValue.action.started -= callback => OnTriggerHand(callback, hand);
+            controller.activateActionValue.action.performed += callback => OnTriggerHand(callback, hand);
+            controller.activateActionValue.action.canceled += callback => OnTriggerHand(callback, hand);
+        }
         // Update is called once per frame
         void Update()
         {
@@ -57,33 +62,22 @@ namespace UnityEngine.XR.Interaction.Toolkit.Inputs
         private void FixedUpdate()
         {
         }
-        public void OnLeftGripHand(InputAction.CallbackContext context)
+        public void OnGripHand(InputAction.CallbackContext context, Hand hand)
         {
             float handGrabValue = context.ReadValue<float>();
-            Debug.Log("Grab Value" + handGrabValue);
-            leftHandAnimator.SetFloat("Grip", handGrabValue);
+            if (hand == Hand.Left)
+                leftHandAnimator.SetFloat("Grip", handGrabValue);
+            else if (hand == Hand.Right)
+                rightHandAnimator.SetFloat("Grip", handGrabValue);
         }
 
-        public void OnLeftTriggerHand(InputAction.CallbackContext context)
+        public void OnTriggerHand(InputAction.CallbackContext context, Hand hand)
         {
             float handTriggerValue = context.ReadValue<float>();
-            Debug.Log("Trigger Value" + handTriggerValue);
-            leftHandAnimator.SetFloat("Trigger", handTriggerValue);
-        }
-
-        public void OnRightGripHand(InputAction.CallbackContext context)
-        {
-            float handGrabValue = context.ReadValue<float>();
-            Debug.Log("Grab Value" + handGrabValue);
-            rightHandAnimator.SetFloat("Grip", handGrabValue);
-        }
-
-
-        public void OnRightTriggerHand(InputAction.CallbackContext context)
-        {
-            float handTriggerValue = context.ReadValue<float>();
-            Debug.Log("Trigger Value" + handTriggerValue);
-            rightHandAnimator.SetFloat("Trigger", handTriggerValue);
+            if (hand == Hand.Left)
+                leftHandAnimator.SetFloat("Trigger", handTriggerValue);
+            else if (hand == Hand.Right)
+                rightHandAnimator.SetFloat("Trigger", handTriggerValue);
         }
     }
 }
