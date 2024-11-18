@@ -44,7 +44,6 @@ namespace UnityEngine.XR.Interaction.Toolkit
         // Método para suscribir el conjunto de eventos (started, performed, canceled) a una acción de entrada.
         public void OnSuscribedEvents(InputAction action, Action<InputAction.CallbackContext> callback)
         {
-            action.started += context => callback(context);
             action.performed += context => callback(context);
             action.canceled += context => callback(context);
         }

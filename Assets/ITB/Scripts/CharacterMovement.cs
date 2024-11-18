@@ -10,6 +10,7 @@ namespace UnityEngine.XR.Interaction.Toolkit.Samples.StarterAssets
         public ContinuousMoveProviderBase moveCharacter;
         private float minSpeed;
         private ActionBasedController controller;
+
         [Header("Character Movement Modifications")]
         [Tooltip("Maximun Speed Velocity of the character")]
         public float maxSpeed;
@@ -27,12 +28,13 @@ namespace UnityEngine.XR.Interaction.Toolkit.Samples.StarterAssets
             controller = CharacterControllManager.instance.leftController;
             minSpeed = moveCharacter.moveSpeed;
             actualSpeed = minSpeed;
-            CharacterControllManager.instance.OnSuscribedEvents(controller.scaleToggleAction.action, Run);   
+            CharacterControllManager.instance.OnSuscribedEvents(controller.scaleToggleAction.action, Run);
+            //CharacterControllManager.instance.OnSuscribedEvents(controller.translateAnchorAction.action, Run);
         }
 
         private void Update()
         {
-
+            
         }
         private void FixedUpdate()
         {
