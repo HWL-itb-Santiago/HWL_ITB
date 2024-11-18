@@ -1,47 +1,50 @@
-using System.Collections;
-using System.Collections.Generic;
+
 using TMPro;
-using UnityEngine;
 using UnityEngine.InputSystem;
-using UnityEngine.UI;
 
 namespace UnityEngine.XR.Interaction.Toolkit.Samples.StarterAssets
 {
     public class CharacterMovement : MonoBehaviour
     {
-        public DynamicMoveProvider dynamicMoveCharacter;
+        [Header("References to the Move Provider")]
+        public ContinuousMoveProviderBase moveCharacter;
         private float minSpeed;
+        private ActionBasedController controller;
+
         [Header("Character Movement Modifications")]
         [Tooltip("Maximun Speed Velocity of the character")]
         public float maxSpeed;
         public float actualSpeed;
 
-        public TMPro.TMP_Text text;
+        public TMP_Text text;
 
+
+        private void Awake()
+        {
+        }
         // Start is called before the first frame update
         void Start()
         {
-            minSpeed = dynamicMoveCharacter.moveSpeed;
+            controller = CharacterControllManager.instance.leftController;
+            minSpeed = moveCharacter.moveSpeed;
             actualSpeed = minSpeed;
-            CharacterControllManager.instance.leftController.scaleToggleAction.action.performed += Run;
-            CharacterControllManager.instance.leftController.scaleToggleAction.action.canceled += Run;
+            CharacterControllManager.instance.OnSuscribedEvents(controller.scaleToggleAction.action, Run);
+            //CharacterControllManager.instance.OnSuscribedEvents(controller.translateAnchorAction.action, Run);
         }
 
-        // Update is called once per frame
-        void Update()
+        private void Update()
         {
             
         }
-
         private void FixedUpdate()
         {
-            dynamicMoveCharacter.moveSpeed = actualSpeed;
-            text.text = dynamicMoveCharacter.moveSpeed.ToString();
+            moveCharacter.moveSpeed = actualSpeed;
+            text.text = moveCharacter.moveSpeed.ToString();
         }
 
         public void Run(InputAction.CallbackContext context)
         {
-            if (dynamicMoveCharacter != null)
+            if (moveCharacter != null)
             {
                 float amount = context.ReadValue<float>();
                 float newSpeed = minSpeed + (amount * maxSpeed);
