@@ -790,7 +790,7 @@ public partial class @XRIDefaultInputActions: IInputActionCollection2, IDisposab
                     ""name"": ""Scale Toggle"",
                     ""type"": ""Button"",
                     ""id"": ""80ed7d74-56de-473c-bf76-da3bdd16b562"",
-                    ""expectedControlType"": ""Button"",
+                    ""expectedControlType"": """",
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
@@ -1035,7 +1035,7 @@ public partial class @XRIDefaultInputActions: IInputActionCollection2, IDisposab
                     ""name"": ""Grab Move"",
                     ""type"": ""Button"",
                     ""id"": ""c5a6d766-d487-42ae-b293-da4749469e18"",
-                    ""expectedControlType"": ""Button"",
+                    ""expectedControlType"": """",
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
@@ -1090,7 +1090,7 @@ public partial class @XRIDefaultInputActions: IInputActionCollection2, IDisposab
                     ""path"": ""<XRController>{LeftHand}/{Primary2DAxis}"",
                     ""interactions"": ""Sector(directions=12,sweepBehavior=1),Sector(directions=2,sweepBehavior=2)"",
                     ""processors"": """",
-                    ""groups"": ""Noncontinuous Move"",
+                    ""groups"": ""Noncontinuous Move;Generic XR Controller"",
                     ""action"": ""Turn"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
@@ -1101,7 +1101,7 @@ public partial class @XRIDefaultInputActions: IInputActionCollection2, IDisposab
                     ""path"": ""<XRController>{LeftHand}/{Primary2DAxis}"",
                     ""interactions"": """",
                     ""processors"": ""StickDeadzone"",
-                    ""groups"": ""Continuous Move"",
+                    ""groups"": ""Continuous Move;Generic XR Controller"",
                     ""action"": ""Move"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
@@ -1505,7 +1505,7 @@ public partial class @XRIDefaultInputActions: IInputActionCollection2, IDisposab
                     ""name"": ""Select"",
                     ""type"": ""Button"",
                     ""id"": ""ac96c10b-c955-4a46-8e67-bf16bc069b53"",
-                    ""expectedControlType"": ""Button"",
+                    ""expectedControlType"": """",
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
