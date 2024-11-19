@@ -727,7 +727,7 @@ public partial class @XRIDefaultInputActions: IInputActionCollection2, IDisposab
                     ""name"": ""Activate"",
                     ""type"": ""Button"",
                     ""id"": ""0c0991c5-d329-4afc-8892-1076b440477c"",
-                    ""expectedControlType"": ""Button"",
+                    ""expectedControlType"": """",
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
@@ -1775,18 +1775,18 @@ public partial class @XRIDefaultInputActions: IInputActionCollection2, IDisposab
             ""actions"": [
                 {
                     ""name"": ""Teleport Select"",
-                    ""type"": ""Value"",
+                    ""type"": ""Button"",
                     ""id"": ""02e43582-8973-4940-af06-dff6158e3df2"",
-                    ""expectedControlType"": ""Vector2"",
+                    ""expectedControlType"": """",
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": true
                 },
                 {
                     ""name"": ""Teleport Mode Activate"",
-                    ""type"": ""Value"",
+                    ""type"": ""Button"",
                     ""id"": ""a6c7231d-c55d-4dd4-9e87-877bb5522ef5"",
-                    ""expectedControlType"": ""Vector2"",
+                    ""expectedControlType"": """",
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": true
@@ -1795,7 +1795,7 @@ public partial class @XRIDefaultInputActions: IInputActionCollection2, IDisposab
                     ""name"": ""Teleport Mode Cancel"",
                     ""type"": ""Button"",
                     ""id"": ""d587b60c-39a0-4365-8075-477ce484ba0f"",
-                    ""expectedControlType"": ""Button"",
+                    ""expectedControlType"": """",
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
@@ -1831,7 +1831,7 @@ public partial class @XRIDefaultInputActions: IInputActionCollection2, IDisposab
                     ""name"": ""Grab Move"",
                     ""type"": ""Button"",
                     ""id"": ""cfb29d37-3db0-4e5d-a73b-7d48a19e279e"",
-                    ""expectedControlType"": ""Button"",
+                    ""expectedControlType"": """",
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
@@ -1850,8 +1850,8 @@ public partial class @XRIDefaultInputActions: IInputActionCollection2, IDisposab
                 {
                     ""name"": """",
                     ""id"": ""919c4a6c-22ed-4083-8e14-f30e91ff59fe"",
-                    ""path"": ""<XRController>{RightHand}/{Primary2DAxis}"",
-                    ""interactions"": ""Sector(directions=-1,sweepBehavior=3)"",
+                    ""path"": ""<XRController>{RightHand}/{TriggerButton}"",
+                    ""interactions"": ""Press(behavior=2)"",
                     ""processors"": """",
                     ""groups"": ""Generic XR Controller"",
                     ""action"": ""Teleport Select"",
@@ -1861,8 +1861,8 @@ public partial class @XRIDefaultInputActions: IInputActionCollection2, IDisposab
                 {
                     ""name"": """",
                     ""id"": ""62690862-4688-4010-975b-b3d9c6062157"",
-                    ""path"": ""<XRController>{RightHand}/{Primary2DAxis}"",
-                    ""interactions"": ""Sector(directions=1)"",
+                    ""path"": ""<XRController>{RightHand}/{TriggerButton}"",
+                    ""interactions"": ""Press"",
                     ""processors"": """",
                     ""groups"": ""Generic XR Controller"",
                     ""action"": ""Teleport Mode Activate"",
@@ -1905,7 +1905,7 @@ public partial class @XRIDefaultInputActions: IInputActionCollection2, IDisposab
                 {
                     ""name"": """",
                     ""id"": ""c4b46d7d-8231-4672-83f9-75af565faf57"",
-                    ""path"": ""<XRController>{RightHand}/{Primary2DAxis}"",
+                    ""path"": ""<XRController>/{Primary2DAxis}"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": ""Noncontinuous Move"",
