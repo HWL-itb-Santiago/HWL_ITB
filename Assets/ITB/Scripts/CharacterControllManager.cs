@@ -39,7 +39,7 @@ namespace UnityEngine.XR.Interaction.Toolkit
         // Update is called once per frame
         void Update()
         {
-            isContinous.SetActive(!isTeleport.activeSelf);
+            //isContinous.SetActive(!isTeleport.activeSelf);
         }
         // Método para suscribir el conjunto de eventos (started, performed, canceled) a una acción de entrada.
         public void OnSuscribedEvents(InputAction action, Action<InputAction.CallbackContext> callback)
