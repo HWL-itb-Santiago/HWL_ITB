@@ -16,8 +16,6 @@ namespace UnityEngine.XR.Interaction.Toolkit.Samples.StarterAssets
         public float maxSpeed;
         public float actualSpeed;
 
-        public TMP_Text text;
-
 
         private void Awake()
         {
@@ -29,7 +27,6 @@ namespace UnityEngine.XR.Interaction.Toolkit.Samples.StarterAssets
             minSpeed = moveCharacter.moveSpeed;
             actualSpeed = minSpeed;
             CharacterControllManager.instance.OnSuscribedEvents(controller.scaleToggleAction.action, Run);
-            //CharacterControllManager.instance.OnSuscribedEvents(controller.translateAnchorAction.action, Run);
         }
 
         private void Update()
@@ -38,8 +35,6 @@ namespace UnityEngine.XR.Interaction.Toolkit.Samples.StarterAssets
         }
         private void FixedUpdate()
         {
-            moveCharacter.moveSpeed = actualSpeed;
-            text.text = moveCharacter.moveSpeed.ToString();
         }
 
         public void Run(InputAction.CallbackContext context)
@@ -50,6 +45,7 @@ namespace UnityEngine.XR.Interaction.Toolkit.Samples.StarterAssets
                 float newSpeed = minSpeed + (amount * maxSpeed);
                 actualSpeed = Mathf.Clamp(Mathf.Lerp(minSpeed, newSpeed, 1f), minSpeed, maxSpeed);
             }
+            moveCharacter.moveSpeed = actualSpeed;
         }
     }
 

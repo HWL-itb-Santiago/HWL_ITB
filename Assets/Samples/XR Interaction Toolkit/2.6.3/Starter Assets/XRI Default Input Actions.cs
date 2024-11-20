@@ -979,18 +979,18 @@ public partial class @XRIDefaultInputActions: IInputActionCollection2, IDisposab
             ""actions"": [
                 {
                     ""name"": ""Teleport Select"",
-                    ""type"": ""Value"",
+                    ""type"": ""Button"",
                     ""id"": ""cbeaf823-3b69-4004-8ec8-13ea2ca3fc31"",
-                    ""expectedControlType"": ""Vector2"",
+                    ""expectedControlType"": """",
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": true
                 },
                 {
                     ""name"": ""Teleport Mode Activate"",
-                    ""type"": ""Value"",
+                    ""type"": ""Button"",
                     ""id"": ""a21db72c-4843-4839-b4d0-3ce8d287cb86"",
-                    ""expectedControlType"": ""Vector2"",
+                    ""expectedControlType"": """",
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": true
@@ -1054,8 +1054,8 @@ public partial class @XRIDefaultInputActions: IInputActionCollection2, IDisposab
                 {
                     ""name"": """",
                     ""id"": ""95fa1419-ca7b-4c8a-8d15-7d46e58d82e3"",
-                    ""path"": ""<XRController>{LeftHand}/{Primary2DAxis}"",
-                    ""interactions"": ""Sector(directions=-1,sweepBehavior=3)"",
+                    ""path"": ""<XRController>{LeftHand}/{GripButton}"",
+                    ""interactions"": """",
                     ""processors"": """",
                     ""groups"": ""Noncontinuous Move"",
                     ""action"": ""Teleport Select"",
@@ -1065,8 +1065,8 @@ public partial class @XRIDefaultInputActions: IInputActionCollection2, IDisposab
                 {
                     ""name"": """",
                     ""id"": ""8da6ed3a-f621-49fe-8c76-1f6b7d7754d6"",
-                    ""path"": ""<XRController>{LeftHand}/{Primary2DAxis}"",
-                    ""interactions"": ""Sector(directions=1)"",
+                    ""path"": ""<XRController>{LeftHand}/{GripButton}"",
+                    ""interactions"": """",
                     ""processors"": """",
                     ""groups"": ""Noncontinuous Move"",
                     ""action"": ""Teleport Mode Activate"",

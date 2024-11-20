@@ -3,6 +3,7 @@
 // Conecta los componentes Animator de cada mano a los eventos de entrada (grip y trigger) proporcionados por los controladores de XR.
 
 using System;
+using System.Collections.Generic;
 using UnityEngine.InputSystem;
 
 namespace UnityEngine.XR.Interaction.Toolkit.Inputs
