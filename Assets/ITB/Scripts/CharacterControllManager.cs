@@ -48,7 +48,7 @@ namespace UnityEngine.XR.Interaction.Toolkit
         void Start()
         {
             OnSuscribedEvents(leftController.activateAction.action, OnDistanceRay);
-            OnSuscribedEvents(rightController.activateAction.action, OnTeleportMode);
+            //OnSuscribedEvents(rightController.activateAction.action, OnTeleportMode);
         }
 
         // Update is called once per frame
@@ -66,7 +66,6 @@ namespace UnityEngine.XR.Interaction.Toolkit
         private void OnDistanceRay(InputAction.CallbackContext context)
         {
             distanceInteractorRay.gameObject.SetActive(!distanceInteractorRay.gameObject.activeSelf);
-            directInteractorRay.gameObject.SetActive(!distanceInteractorRay.gameObject.activeSelf);
         }
         // Método para suscribir el conjunto de eventos (started, performed, canceled) a una acción de entrada.
         public void OnSuscribedEvents(InputAction action, Action<InputAction.CallbackContext> callback)
