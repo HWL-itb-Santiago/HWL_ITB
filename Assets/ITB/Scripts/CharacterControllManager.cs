@@ -74,8 +74,8 @@ namespace UnityEngine.XR.Interaction.Toolkit
         public ActionBasedController rightController;
 
         // Estados internos de los modos de interacción.
-        private bool isTeleport;       // Indica si el modo Teleport está activo.
-        private bool isDistanceRay;   // Indica si el modo Distance Ray está activo.
+        private bool isTeleport = false;       // Indica si el modo Teleport está activo.
+        private bool isDistanceRay = false;   // Indica si el modo Distance Ray está activo.
 
         // Singleton para acceso global.
         public static CharacterControllManager instance;
@@ -149,7 +149,7 @@ namespace UnityEngine.XR.Interaction.Toolkit
         /// <param name="context">Contexto de la entrada.</param>
         private void UpdateTeleportMode(InputAction.CallbackContext context)
         {
-            isTeleport = context.performed;
+            isTeleport = !isTeleport;
             UpdateInteractionMode();
         }
 
@@ -159,7 +159,7 @@ namespace UnityEngine.XR.Interaction.Toolkit
         /// <param name="context">Contexto de la entrada.</param>
         private void UpdateDistanceRayMode(InputAction.CallbackContext context)
         {
-            isDistanceRay = context.performed;
+            isDistanceRay = !isDistanceRay;
             UpdateInteractionMode();
         }
 
@@ -170,6 +170,7 @@ namespace UnityEngine.XR.Interaction.Toolkit
         {
             bool teleportActive = isTeleport && !isDistanceRay;
             bool distanceRayActive = isDistanceRay && !isTeleport;
+
 
             // Activar/desactivar componentes.
             SetActiveComponents(teleportActive, distanceRayActive);
