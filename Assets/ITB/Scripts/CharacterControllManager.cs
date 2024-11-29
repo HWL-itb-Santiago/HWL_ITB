@@ -51,21 +51,6 @@ namespace UnityEngine.XR.Interaction.Toolkit
         [Tooltip("Interactor de rayos para la mano derecha.")]
         public XRRayInteractor distanceRightInteractorRay;
 
-        [Header("Reference to Teleport Controller")]
-        [Tooltip("Controlador que gestiona el teletransporte.")]
-        public ActionBasedController Teleport;
-
-        [Header("Reference to Movement Provider")]
-        [Tooltip("Proveedor de movimiento continuo del personaje.")]
-        public ContinuousMoveProviderBase Continuous;
-
-        [Header("Reference to SnapTurn and ContinuousTurn Providers")]
-        [Tooltip("Proveedor de giro basado en Snap Turn.")]
-        public SnapTurnProviderBase isSnapTurn;
-
-        [Tooltip("Proveedor de giro continuo.")]
-        public ContinuousTurnProviderBase ContinuousTurn;
-
         [Header("Reference to Player Controllers")]
         [Tooltip("Controlador basado en acciones para la mano izquierda.")]
         public ActionBasedController leftController;
@@ -83,7 +68,7 @@ namespace UnityEngine.XR.Interaction.Toolkit
         /// <summary>
         /// Evento para notificar a otros scripts cuando el modo cambia.
         /// </summary>
-        public event Action<bool, bool> OnModeChanged;
+        public event Action<bool> OnModeChanged;
 
         /// <summary>
         /// Configura el Singleton y establece los estados iniciales.
@@ -107,7 +92,7 @@ namespace UnityEngine.XR.Interaction.Toolkit
         /// </summary>
         void Start()
         {
-            UpdateInteractionMode();
+            //UpdateInteractionMode();
             SubscribeToInputActions();
         }
 
@@ -116,8 +101,8 @@ namespace UnityEngine.XR.Interaction.Toolkit
         /// </summary>
         void Update()
         {
-            Debug.Log($"Teleport Mode: {isTeleport}, Distance Ray: {isDistanceRay}");
-            m_Text.text = $"Teleport: {isTeleport}, DistanceRay: {isDistanceRay}";
+            //Debug.Log($"Teleport Mode: {isTeleport}, Distance Ray: {isDistanceRay}");
+            //m_Text.text = $"Teleport: {isTeleport}, DistanceRay: {isDistanceRay}";
         }
 
         /// <summary>
@@ -125,10 +110,10 @@ namespace UnityEngine.XR.Interaction.Toolkit
         /// </summary>
         private void SubscribeToInputActions()
         {
-            if (rightController != null)
-                SubscribeToEvents(rightController.activateAction.action, UpdateDistanceRayMode);
-            if (leftController != null)
-                SubscribeToEvents(leftController.activateAction.action, UpdateTeleportMode);
+            //if (rightController != null)
+            //    SubscribeToEvents(rightController.activateAction.action, UpdateDistanceRayMode);
+            //if (leftController != null)
+            //    SubscribeToEvents(leftController.activateAction.action, UpdateTeleportMode);
         }
 
         /// <summary>
@@ -150,7 +135,7 @@ namespace UnityEngine.XR.Interaction.Toolkit
         private void UpdateTeleportMode(InputAction.CallbackContext context)
         {
             isTeleport = !isTeleport;
-            UpdateInteractionMode();
+            //UpdateInteractionMode();
         }
 
         /// <summary>
@@ -160,40 +145,31 @@ namespace UnityEngine.XR.Interaction.Toolkit
         private void UpdateDistanceRayMode(InputAction.CallbackContext context)
         {
             isDistanceRay = !isDistanceRay;
-            UpdateInteractionMode();
+            //UpdateInteractionMode();
         }
 
         /// <summary>
         /// Actualiza los componentes activos según los estados de los modos.
         /// </summary>
-        private void UpdateInteractionMode()
+        public void UpdateTeleportMode()
         {
-            bool teleportActive = isTeleport && !isDistanceRay;
-            bool distanceRayActive = isDistanceRay && !isTeleport;
+            Debug.Log("Teleport Activate");
+            isTeleport = true;
+            bool teleportActive = isTeleport;
 
-
-            // Activar/desactivar componentes.
-            SetActiveComponents(teleportActive, distanceRayActive);
 
             // Notificar a otros scripts sobre el cambio de modo.
-            OnModeChanged?.Invoke(teleportActive, distanceRayActive);
+            OnModeChanged?.Invoke(teleportActive);
         }
 
-        /// <summary>
-        /// Activa o desactiva los componentes según los modos seleccionados.
-        /// </summary>
-        /// <param name="teleportActive">Indica si el modo Teleport está activo.</param>
-        /// <param name="distanceRayActive">Indica si el modo Distance Ray está activo.</param>
-        private void SetActiveComponents(bool teleportActive, bool distanceRayActive)
+        public void UpdateContinuousMode()
         {
-            Teleport.gameObject.SetActive(teleportActive);
-            isSnapTurn.gameObject.SetActive(teleportActive);
+            isTeleport = false;
+            bool teleportActive = isTeleport;
 
-            Continuous.gameObject.SetActive(!teleportActive);
-            ContinuousTurn.gameObject.SetActive(!teleportActive);
-
-            distanceLeftInteractorRay.gameObject.SetActive(distanceRayActive);
-            distanceRightInteractorRay.gameObject.SetActive(distanceRayActive);
+            // Notificar a otros scripts sobre el cambio de modo.
+            OnModeChanged?.Invoke(teleportActive);
         }
+
     }
 }

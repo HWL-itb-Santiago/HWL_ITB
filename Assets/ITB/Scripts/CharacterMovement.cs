@@ -23,6 +23,7 @@
  * 
  * -----------------------------------------------------------------------------
  */
+using System;
 using UnityEngine.InputSystem;
 
 namespace UnityEngine.XR.Interaction.Toolkit.Samples.StarterAssets
@@ -72,7 +73,7 @@ namespace UnityEngine.XR.Interaction.Toolkit.Samples.StarterAssets
             actualSpeed = minSpeed;
 
             // Suscribe el método Run a la acción de entrada scaleToggleAction del controlador.
-            CharacterControllManager.instance.SubscribeToEvents(controller.scaleToggleAction.action, Run);
+            SubscribeToEvents(controller.scaleToggleAction.action, Run);
         }
 
         /// <summary>
@@ -99,6 +100,13 @@ namespace UnityEngine.XR.Interaction.Toolkit.Samples.StarterAssets
                 // Habilita una acción háptica asociada al controlador para proporcionar retroalimentación al usuario.
                 controller.hapticDeviceAction.action.Enable();
             }
+        }
+
+        public void SubscribeToEvents(InputAction action, Action<InputAction.CallbackContext> callback)
+        {
+            action.started += context => callback(context);
+            action.performed += context => callback(context);
+            action.canceled += context => callback(context);
         }
     }
 }
