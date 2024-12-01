@@ -1,27 +1,3 @@
-/*
- * -----------------------------------------------------------------------------
- * Script Name: CharacterControllManager
- * Author: Santiago Vergara Rodriguez
- * Created: 21/11/2024
- * Description:
- *     Este script gestiona los modos de interacción en un entorno de VR. Permite 
- *     alternar entre el modo Teleport y el modo Distance Ray, activando o 
- *     desactivando los componentes relevantes para cada modo. Incluye un sistema 
- *     de notificación para informar a otros scripts sobre cambios en el modo actual.
- * 
- * Features:
- *     - Alterna entre modos de interacción (Teleport y Distance Ray).
- *     - Notifica cambios en el modo mediante eventos.
- *     - Controla la activación y desactivación de componentes según el modo seleccionado.
- * 
- * Dependencies:
- *     - UnityEngine.XR.Interaction.Toolkit
- *     - UnityEngine.InputSystem
- *     - TMPro (TextMeshPro para mostrar estados en tiempo real).
- * 
- * -----------------------------------------------------------------------------
- */
-
 using System;
 using UnityEngine.InputSystem;
 using TMPro;
@@ -44,13 +20,6 @@ namespace UnityEngine.XR.Interaction.Toolkit
         [Tooltip("Gestor de acciones de entrada configuradas en Input System.")]
         public InputActionManager inputActionManager;
 
-        [Header("Reference to Distance Ray Interactor Controllers")]
-        [Tooltip("Interactor de rayos para la mano izquierda.")]
-        public XRRayInteractor distanceLeftInteractorRay;
-
-        [Tooltip("Interactor de rayos para la mano derecha.")]
-        public XRRayInteractor distanceRightInteractorRay;
-
         [Header("Reference to Player Controllers")]
         [Tooltip("Controlador basado en acciones para la mano izquierda.")]
         public ActionBasedController leftController;
@@ -58,12 +27,21 @@ namespace UnityEngine.XR.Interaction.Toolkit
         [Tooltip("Controlador basado en acciones para la mano derecha.")]
         public ActionBasedController rightController;
 
+        [Header("Reference to Distance Ray Controllers")]
+        public XRRayInteractor distanceRayRightController;
+        public XRRayInteractor distanceRayLeftController;
+
+        [Header("Reference to Direct Ray Controllers")]
+        public XRDirectInteractor directRayRightController;
+        public XRDirectInteractor directRayLeftController;
+
+        [Header("Reference to Player Teleport Action")]
+        public InputActionReference leftControllerTeleport;
         // Estados internos de los modos de interacción.
         private bool isTeleport = false;       // Indica si el modo Teleport está activo.
-        private bool isDistanceRay = false;   // Indica si el modo Distance Ray está activo.
 
         // Singleton para acceso global.
-        public static CharacterControllManager instance;
+        public static CharacterControllManager Instance;
 
         /// <summary>
         /// Evento para notificar a otros scripts cuando el modo cambia.
@@ -75,77 +53,15 @@ namespace UnityEngine.XR.Interaction.Toolkit
         /// </summary>
         private void Awake()
         {
-            if (instance == null)
+            if (Instance == null)
             {
-                instance = this;
+                Instance = this;
                 DontDestroyOnLoad(gameObject);
             }
             else
                 Destroy(gameObject);
 
             isTeleport = false;
-            isDistanceRay = false;
-        }
-
-        /// <summary>
-        /// Inicializa los modos y suscribe eventos de entrada al inicio.
-        /// </summary>
-        void Start()
-        {
-            //UpdateInteractionMode();
-            SubscribeToInputActions();
-        }
-
-        /// <summary>
-        /// Actualiza el texto UI para mostrar el estado actual de los modos.
-        /// </summary>
-        void Update()
-        {
-            //Debug.Log($"Teleport Mode: {isTeleport}, Distance Ray: {isDistanceRay}");
-            //m_Text.text = $"Teleport: {isTeleport}, DistanceRay: {isDistanceRay}";
-        }
-
-        /// <summary>
-        /// Suscribe los eventos de entrada para alternar entre modos.
-        /// </summary>
-        private void SubscribeToInputActions()
-        {
-            //if (rightController != null)
-            //    SubscribeToEvents(rightController.activateAction.action, UpdateDistanceRayMode);
-            //if (leftController != null)
-            //    SubscribeToEvents(leftController.activateAction.action, UpdateTeleportMode);
-        }
-
-        /// <summary>
-        /// Suscribe un conjunto de eventos de entrada (started, performed, canceled) a un callback.
-        /// </summary>
-        /// <param name="action">Acción de entrada a suscribir.</param>
-        /// <param name="callback">Callback que se ejecutará en cada evento.</param>
-        public void SubscribeToEvents(InputAction action, Action<InputAction.CallbackContext> callback)
-        {
-            action.started += context => callback(context);
-            action.performed += context => callback(context);
-            action.canceled += context => callback(context);
-        }
-
-        /// <summary>
-        /// Actualiza el estado del modo Teleport en función de la entrada del usuario.
-        /// </summary>
-        /// <param name="context">Contexto de la entrada.</param>
-        private void UpdateTeleportMode(InputAction.CallbackContext context)
-        {
-            isTeleport = !isTeleport;
-            //UpdateInteractionMode();
-        }
-
-        /// <summary>
-        /// Actualiza el estado del modo Distance Ray en función de la entrada del usuario.
-        /// </summary>
-        /// <param name="context">Contexto de la entrada.</param>
-        private void UpdateDistanceRayMode(InputAction.CallbackContext context)
-        {
-            isDistanceRay = !isDistanceRay;
-            //UpdateInteractionMode();
         }
 
         /// <summary>
@@ -153,13 +69,12 @@ namespace UnityEngine.XR.Interaction.Toolkit
         /// </summary>
         public void UpdateTeleportMode()
         {
-            Debug.Log("Teleport Activate");
             isTeleport = true;
             bool teleportActive = isTeleport;
 
 
             // Notificar a otros scripts sobre el cambio de modo.
-            OnModeChanged?.Invoke(teleportActive);
+            OnModeChanged(teleportActive);
         }
 
         public void UpdateContinuousMode()
@@ -168,8 +83,33 @@ namespace UnityEngine.XR.Interaction.Toolkit
             bool teleportActive = isTeleport;
 
             // Notificar a otros scripts sobre el cambio de modo.
-            OnModeChanged?.Invoke(teleportActive);
+            OnModeChanged(teleportActive);
         }
 
+        /// <summary>
+        /// Suscribe un conjunto de eventos de entrada (started, performed, canceled) a un callback específico.
+        /// </summary>
+        /// <param name="action">Acción de entrada a suscribir.</param>
+        /// <param name="callback">Callback que se ejecutará en cada evento.</param>
+        public void SubscribeToAction(InputAction action, Action<InputAction.CallbackContext> callback)
+        {
+            // Se suscribe a los eventos de la acción de entrada.
+            action.started += callback;
+            action.performed += callback;
+            action.canceled += callback;
+        }
+
+        /// <summary>
+        /// Elimina la suscripción de eventos de entrada para la acción proporcionada.
+        /// </summary>
+        /// <param name="action">Acción de entrada de la cual se desea eliminar la suscripción.</param>
+        /// <param name="callback">Callback que se debe desuscribir.</param>
+        public void UnsubscribeFromAction(InputAction action, Action<InputAction.CallbackContext> callback)
+        {
+            // Se elimina la suscripción de los eventos de la acción de entrada.
+            action.started -= callback;
+            action.performed -= callback;
+            action.canceled -= callback;
+        }
     }
 }

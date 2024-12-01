@@ -1,34 +1,3 @@
-/*
- * -----------------------------------------------------------------------------
- * Script Name: AnimateHandInput
- * Author: [Tu Nombre]
- * Created: [Fecha de Creación]
- * Description:
- *     Este script controla las animaciones de las manos (izquierda y derecha) 
- *     en un entorno XR. Conecta las entradas del controlador XR (grip y trigger) 
- *     con los parámetros correspondientes en los componentes Animator 
- *     de las manos. Esto permite que las manos del avatar reflejen las acciones 
- *     del jugador en tiempo real.
- * 
- * Features:
- *     - Sincroniza los valores de grip y trigger de los controladores XR con 
- *       las animaciones de las manos.
- *     - Funciona con controladores basados en Action (ActionBasedController).
- *     - Admite suscripción a eventos de entrada de forma modular.
- * 
- * Dependencies:
- *     - UnityEngine.XR.Interaction.Toolkit
- *     - UnityEngine.InputSystem
- * 
- * Usage:
- *     - Asegúrate de que las manos del personaje tienen un Animator con 
- *       parámetros "Grip" y "Trigger".
- *     - Asigna los controladores izquierdo y derecho desde el 
- *       CharacterControllManager.
- * 
- * -----------------------------------------------------------------------------
- */
-
 using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -39,17 +8,16 @@ namespace UnityEngine.XR.Interaction.Toolkit.Inputs
     /// Controla las animaciones de las manos en función de las entradas del 
     /// controlador XR (grip y trigger).
     /// </summary>
+    [AddComponentMenu("XR/Hand Animation Input")]
     public class AnimateHandInput : MonoBehaviour
     {
-        [Header("Left Hand")]
+        [Header("Hand Animators")]
         [Tooltip("Referencia al Animator de la mano izquierda del personaje.")]
-        public Animator leftHandAnimator;
+        [SerializeField] private Animator leftHandAnimator;
 
-        [Header("Right Hand")]
         [Tooltip("Referencia al Animator de la mano derecha del personaje.")]
-        public Animator rightHandAnimator;
+        [SerializeField] private Animator rightHandAnimator;
 
-        // Controladores de XR para la mano izquierda y derecha.
         private ActionBasedController leftController;
         private ActionBasedController rightController;
 
@@ -59,73 +27,102 @@ namespace UnityEngine.XR.Interaction.Toolkit.Inputs
         public enum Hand { Left, Right };
 
         /// <summary>
-        /// Inicializa referencias y suscribe eventos a los controladores XR.
+        /// Inicializa las referencias a los controladores y anima las manos en función de las entradas del controlador.
         /// </summary>
-        void Start()
+        private void Start()
         {
-            // Asigna referencias a los controladores desde el CharacterControlManager.
-            leftController = CharacterControllManager.instance.leftController;
-            rightController = CharacterControllManager.instance.rightController;
+            InitializeControllers();
+            SubscribeToInputEvents();
+        }
 
-            if (leftController != null && rightController != null)
+        /// <summary>
+        /// Inicializa las referencias a los controladores izquierdo y derecho.
+        /// </summary>
+        private void InitializeControllers()
+        {
+            leftController = CharacterControllManager.Instance?.leftController;
+            rightController = CharacterControllManager.Instance?.rightController;
+
+            if (leftController == null || rightController == null)
             {
-                // Suscribir eventos para el controlador derecho (grip y trigger).
-                OnSuscribedEvents(rightController.selectActionValue.action, OnGripHand, Hand.Right);
-                OnSuscribedEvents(rightController.activateActionValue.action, OnTriggerHand, Hand.Right);
-
-                // Suscribir eventos para el controlador izquierdo (grip y trigger).
-                OnSuscribedEvents(leftController.selectActionValue.action, OnGripHand, Hand.Left);
-                OnSuscribedEvents(leftController.activateActionValue.action, OnTriggerHand, Hand.Left);
+                Debug.LogError("Controladores XR no asignados en AnimateHandInput.");
+                return;
             }
-            else
+        }
+
+        /// <summary>
+        /// Suscribe eventos de entrada a las acciones correspondientes de grip y trigger de cada mano.
+        /// </summary>
+        private void SubscribeToInputEvents()
+        {
+            if (leftController != null)
             {
-                Debug.LogError("InputActionManager no asignado en AnimateHandInput.");
+                SubscribeToHandActions(leftController, Hand.Left);
+            }
+
+            if (rightController != null)
+            {
+                SubscribeToHandActions(rightController, Hand.Right);
+            }
+        }
+
+        /// <summary>
+        /// Suscribe las acciones de entrada del controlador para las manos.
+        /// </summary>
+        /// <param name="controller">Controlador XR a suscribir.</param>
+        /// <param name="hand">Mano asociada al controlador.</param>
+        private void SubscribeToHandActions(ActionBasedController controller, Hand hand)
+        {
+            SubscribeToAction(controller.selectActionValue.action, OnGripHand, hand);
+            SubscribeToAction(controller.activateActionValue.action, OnTriggerHand, hand);
+        }
+
+        /// <summary>
+        /// Suscribe eventos de acción de entrada a un callback para una mano específica.
+        /// </summary>
+        /// <param name="action">Acción de entrada a suscribir.</param>
+        /// <param name="callback">Método que será invocado cuando la acción se ejecute.</param>
+        /// <param name="hand">Mano asociada a la acción.</param>
+        private void SubscribeToAction(InputAction action, Action<InputAction.CallbackContext, Hand> callback, Hand hand)
+        {
+            if (action != null)
+            {
+                action.started += context => callback(context, hand);
+                action.performed += context => callback(context, hand);
+                action.canceled += context => callback(context, hand);
             }
         }
 
         /// <summary>
         /// Maneja el evento de grip para sincronizar con el Animator correspondiente.
         /// </summary>
-        /// <param name="context">Contexto de entrada del controlador.</param>
+        /// <param name="context">Contexto de la entrada del controlador.</param>
         /// <param name="hand">Mano afectada (izquierda o derecha).</param>
-        public void OnGripHand(InputAction.CallbackContext context, Hand hand)
+        private void OnGripHand(InputAction.CallbackContext context, Hand hand)
         {
-            float handGrabValue = context.ReadValue<float>(); // Lee el valor del grip.
-
-            // Actualiza el valor del parámetro "Grip" en el Animator.
-            if (hand == Hand.Left)
-                leftHandAnimator.SetFloat("Grip", handGrabValue);
-            else if (hand == Hand.Right)
-                rightHandAnimator.SetFloat("Grip", handGrabValue);
+            float value = context.ReadValue<float>();
+            GetAnimator(hand)?.SetFloat("Grip", value);
         }
 
         /// <summary>
         /// Maneja el evento de trigger para sincronizar con el Animator correspondiente.
         /// </summary>
-        /// <param name="context">Contexto de entrada del controlador.</param>
+        /// <param name="context">Contexto de la entrada del controlador.</param>
         /// <param name="hand">Mano afectada (izquierda o derecha).</param>
-        public void OnTriggerHand(InputAction.CallbackContext context, Hand hand)
+        private void OnTriggerHand(InputAction.CallbackContext context, Hand hand)
         {
-            float handTriggerValue = context.ReadValue<float>(); // Lee el valor del trigger.
-
-            // Actualiza el valor del parámetro "Trigger" en el Animator.
-            if (hand == Hand.Left)
-                leftHandAnimator.SetFloat("Trigger", handTriggerValue);
-            else if (hand == Hand.Right)
-                rightHandAnimator.SetFloat("Trigger", handTriggerValue);
+            float value = context.ReadValue<float>();
+            GetAnimator(hand)?.SetFloat("Trigger", value);
         }
 
         /// <summary>
-        /// Suscribe eventos de entrada a un callback con la mano especificada.
+        /// Obtiene el Animator correspondiente a la mano especificada.
         /// </summary>
-        /// <param name="action">Acción de entrada a suscribir.</param>
-        /// <param name="callback">Callback que se ejecutará en cada evento.</param>
-        /// <param name="hand">Mano asociada al evento.</param>
-        public void OnSuscribedEvents(InputAction action, Action<InputAction.CallbackContext, Hand> callback, Hand hand)
+        /// <param name="hand">Mano (izquierda o derecha).</param>
+        /// <returns>El Animator asociado a la mano.</returns>
+        private Animator GetAnimator(Hand hand)
         {
-            action.started += context => callback(context, hand);
-            action.performed += context => callback(context, hand);
-            action.canceled += context => callback(context, hand);
+            return hand == Hand.Left ? leftHandAnimator : rightHandAnimator;
         }
     }
 }

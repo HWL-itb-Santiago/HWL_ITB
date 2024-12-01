@@ -5,20 +5,21 @@ TagManager:
   serializedVersion: 2
   tags:
   - Ignite
+  - Hands
   layers:
   - Default
   - TransparentFX
   - Ignore Raycast
-  - 
+  - Head
   - Water
   - UI
-  - 
+  - BackGrounds
   - 
   - Grabbable
   - Hands
   - Teleporter
   - NoHandCollide
-  - Menu
+  - 
   - 
   - 
   - 

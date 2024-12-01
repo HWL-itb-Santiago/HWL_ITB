@@ -1,107 +1,155 @@
-/*
- * -----------------------------------------------------------------------------
- * Script Name: CharacterMovement
- * Author: Santiago Vergara Rodriguez
- * Created: 21/11/2024
- * Description:
- *     Este script gestiona el movimiento del personaje en un entorno de VR. 
- *     Permite ajustar dinámicamente la velocidad del personaje basándose en 
- *     las entradas del controlador. Utiliza un ContinuousMoveProviderBase 
- *     para controlar el movimiento continuo, modificando la velocidad en tiempo 
- *     real según los valores de entrada.
- * 
- * Features:
- *     - Ajuste dinámico de velocidad basado en las entradas del usuario.
- *     - Soporte para velocidades mínimas y máximas configurables.
- *     - Implementación de retroalimentación háptica en el controlador.
- *     - Totalmente integrable con el sistema CharacterControllManager.
- * 
- * Dependencies:
- *     - UnityEngine.XR.Interaction.Toolkit
- *     - UnityEngine.InputSystem
- *     - CharacterControllManager (script externo que proporciona referencias de controladores).
- * 
- * -----------------------------------------------------------------------------
- */
 using System;
+using UnityEngine;
 using UnityEngine.InputSystem;
 
 namespace UnityEngine.XR.Interaction.Toolkit.Samples.StarterAssets
 {
     /// <summary>
-    /// Gestiona el movimiento de un personaje controlado mediante un sistema de VR, 
-    /// permitiendo modificar la velocidad de movimiento en tiempo real basado en la entrada del usuario.
+    /// Gestiona el movimiento de un personaje controlado por VR, permitiendo modificar la velocidad de movimiento en tiempo real 
+    /// basado en la entrada del usuario.
     /// </summary>
     public class CharacterMovement : MonoBehaviour
     {
-        [Header("References to the Move Provider")]
-        [Tooltip("Referencia al componente que gestiona el movimiento continuo del personaje.")]
+        [Header("Movement Provider References")]
+        [Tooltip("Componente que gestiona el movimiento continuo del personaje.")]
         public ContinuousMoveProviderBase moveCharacter;
 
-        // Velocidad mínima permitida del personaje, obtenida del proveedor de movimiento.
-        private float minSpeed;
-
-        // Referencia al controlador que recibe las entradas del usuario.
-        private ActionBasedController controller;
-
-        [Header("Character Movement Modifications")]
+        [Header("Movement Parameters")]
         [Tooltip("Velocidad máxima permitida para el movimiento del personaje.")]
         public float maxSpeed;
 
         [Tooltip("Velocidad actual del personaje, calculada dinámicamente.")]
         public float actualSpeed;
 
+        // Velocidad mínima permitida, derivada del proveedor de movimiento.
+        private float minSpeed;
+
+        // Controlador para la entrada del usuario.
+        private ActionBasedController controller;
+
         /// <summary>
-        /// Método invocado al cargar el script.
+        /// Se invoca al iniciar el script. Inicializa las variables y configura los eventos de entrada.
         /// </summary>
-        private void Awake()
+        private void Start()
         {
-            // No se inicializan valores aquí por ahora.
+            InitializeControllerReferences();
+            InitializeMovementParameters();
+            SubscribeToControllerEvents();
         }
 
         /// <summary>
-        /// Método invocado al inicio del ciclo de vida del script. Se inicializan variables 
-        /// y se suscriben eventos a las acciones de entrada del controlador.
+        /// Inicializa la referencia al controlador y otros parámetros necesarios.
         /// </summary>
-        void Start()
+        private void InitializeControllerReferences()
         {
-            // Obtiene la referencia al controlador izquierdo desde el CharacterControlManager.
-            controller = CharacterControllManager.instance.leftController;
+            // Asignar el controlador izquierdo desde el CharacterControllManager.
+            controller = CharacterControllManager.Instance.leftController;
 
-            // Configura las velocidades iniciales basadas en el proveedor de movimiento.
-            minSpeed = moveCharacter.moveSpeed;
-            actualSpeed = minSpeed;
-
-            // Suscribe el método Run a la acción de entrada scaleToggleAction del controlador.
-            SubscribeToEvents(controller.scaleToggleAction.action, Run);
+            // Verifica que la referencia al controlador no sea nula.
+            if (controller == null)
+            {
+                Debug.LogError("Controlador izquierdo no asignado en CharacterControllManager.");
+            }
         }
 
         /// <summary>
-        /// Método que ajusta dinámicamente la velocidad del personaje basado en la entrada del usuario.
+        /// Configura las velocidades mínimas y actuales basadas en el proveedor de movimiento.
         /// </summary>
-        /// <param name="context">Contexto que contiene la información del evento de entrada.</param>
-        public void Run(InputAction.CallbackContext context)
+        private void InitializeMovementParameters()
         {
-            // Verifica que el proveedor de movimiento esté asignado.
+            // Se asegura de que el proveedor de movimiento esté configurado correctamente.
             if (moveCharacter != null)
             {
-                // Lee el valor de entrada del usuario, que debería estar en un rango [0, 1].
-                float amount = context.ReadValue<float>();
+                minSpeed = moveCharacter.moveSpeed;
+                actualSpeed = minSpeed; // Inicializa con la velocidad mínima.
+            }
+            else
+            {
+                Debug.LogError("El proveedor de movimiento no está asignado.");
+            }
+        }
 
-                // Calcula la nueva velocidad basada en la entrada del usuario y la velocidad máxima configurada.
-                float newSpeed = minSpeed + (amount * maxSpeed);
+        /// <summary>
+        /// Suscribe los métodos a los eventos de acción del controlador.
+        /// </summary>
+        private void SubscribeToControllerEvents()
+        {
+            // Se suscribe al evento 'scaleToggleAction' para ajustar la velocidad de movimiento.
+            if (controller != null && controller.scaleToggleAction != null)
+            {
+                SubscribeToEvents(controller.scaleToggleAction.action, OnMovementInputReceived);
+            }
+        }
 
-                // Asegura que la velocidad calculada se encuentra dentro del rango permitido.
-                actualSpeed = Mathf.Clamp(Mathf.Lerp(minSpeed, newSpeed, 1f), minSpeed, maxSpeed);
+        /// <summary>
+        /// Método que ajusta la velocidad del personaje basado en la entrada del usuario.
+        /// </summary>
+        /// <param name="context">El contexto de la acción de entrada.</param>
+        private void OnMovementInputReceived(InputAction.CallbackContext context)
+        {
+            // Asegura que el proveedor de movimiento esté asignado antes de procesar la entrada.
+            if (moveCharacter == null)
+            {
+                return;
+            }
 
-                // Actualiza la velocidad del proveedor de movimiento.
-                moveCharacter.moveSpeed = actualSpeed;
+            // Lee el valor de la entrada del usuario, en el rango [0, 1].
+            float inputAmount = context.ReadValue<float>();
 
-                // Habilita una acción háptica asociada al controlador para proporcionar retroalimentación al usuario.
+            // Calcula la nueva velocidad del personaje basada en la entrada.
+            float newSpeed = CalculateSpeedFromInput(inputAmount);
+
+            // Actualiza la velocidad real del personaje.
+            UpdateMovementSpeed(newSpeed);
+
+            // Activa la retroalimentación háptica del controlador.
+            TriggerHapticFeedback();
+        }
+
+        /// <summary>
+        /// Calcula la velocidad de movimiento basada en la entrada del usuario.
+        /// </summary>
+        /// <param name="inputAmount">Valor de entrada del usuario en el rango [0, 1].</param>
+        /// <returns>La nueva velocidad calculada.</returns>
+        private float CalculateSpeedFromInput(float inputAmount)
+        {
+            // Calcula la nueva velocidad considerando el valor de entrada y la velocidad máxima configurada.
+            float newSpeed = minSpeed + (inputAmount * maxSpeed);
+
+            // Limita la velocidad dentro del rango permitido.
+            return Mathf.Clamp(newSpeed, minSpeed, maxSpeed);
+        }
+
+        /// <summary>
+        /// Actualiza la velocidad de movimiento en el proveedor de movimiento.
+        /// </summary>
+        /// <param name="newSpeed">La nueva velocidad que se establecerá.</param>
+        private void UpdateMovementSpeed(float newSpeed)
+        {
+            // Actualiza la velocidad del proveedor de movimiento.
+            moveCharacter.moveSpeed = newSpeed;
+
+            // Actualiza la velocidad actual mostrada.
+            actualSpeed = newSpeed;
+        }
+
+        /// <summary>
+        /// Activa la retroalimentación háptica en el controlador.
+        /// </summary>
+        private void TriggerHapticFeedback()
+        {
+            // Habilita la acción háptica del dispositivo de control.
+            if (controller != null && controller.hapticDeviceAction != null)
+            {
                 controller.hapticDeviceAction.action.Enable();
             }
         }
 
+        /// <summary>
+        /// Suscribe un conjunto de eventos de entrada (started, performed, canceled) a un callback específico.
+        /// </summary>
+        /// <param name="action">La acción de entrada a la que se suscribe.</param>
+        /// <param name="callback">El callback que se ejecutará cuando el evento ocurra.</param>
         public void SubscribeToEvents(InputAction action, Action<InputAction.CallbackContext> callback)
         {
             action.started += context => callback(context);
