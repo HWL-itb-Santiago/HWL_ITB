@@ -1,5 +1,7 @@
 using System;
 using UnityEngine;
+using DG.Tweening;
+using System.Collections;
 
 namespace UnityEngine.XR.Interaction.Toolkit.UI
 {
@@ -129,6 +131,10 @@ namespace UnityEngine.XR.Interaction.Toolkit.UI
             }
         }
 
+        protected virtual void Start()
+        {
+            StartCoroutine(floatingAnimation());
+        }
         /// <summary>
         /// Called every frame to update the Canvas position and rotation.
         /// </summary>
@@ -151,7 +157,9 @@ namespace UnityEngine.XR.Interaction.Toolkit.UI
             Vector3 targetPosition = m_PlayerCamera.position + m_PlayerCamera.forward * m_FollowDistance;
             targetPosition.y = m_PlayerCamera.position.y + m_FollowHeight;
 
-            transform.position = Vector3.Lerp(transform.position, targetPosition, Time.deltaTime * m_FollowSpeed);
+            transform.DOMoveX(targetPosition.x, 1 / m_FollowSpeed).SetEase(Ease.InOutSine);
+            transform.DOMoveZ(targetPosition.z, 1 / m_FollowSpeed).SetEase(Ease.InOutSine);
+            //transform.position = Vector3.Lerp(transform.position, targetPosition, Time.deltaTime * m_FollowSpeed);
         }
 
         /// <summary>
@@ -167,7 +175,13 @@ namespace UnityEngine.XR.Interaction.Toolkit.UI
             if (directionToPlayer.sqrMagnitude < Mathf.Epsilon) return;
 
             Quaternion targetRotation = Quaternion.LookRotation(-directionToPlayer.normalized);
-            transform.rotation = Quaternion.Lerp(transform.rotation, targetRotation, Time.deltaTime * m_RotationSpeed);
+            transform.DORotate(targetRotation.eulerAngles, 1 /  m_RotationSpeed).SetEase(Ease.InOutSine);
+        }
+
+        public IEnumerator floatingAnimation()
+        {
+            transform.DOMoveY(transform.position.y + 0.02f, 5).SetEase(Ease.InOutSine).SetLoops(-1, LoopType.Yoyo);
+            yield return null;
         }
     }
 }
