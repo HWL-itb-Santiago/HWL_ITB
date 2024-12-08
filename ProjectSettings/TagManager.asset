@@ -6,6 +6,8 @@ TagManager:
   tags:
   - Ignite
   - Hands
+  - Menu
+  - ButtonUI
   layers:
   - Default
   - TransparentFX
@@ -14,7 +16,7 @@ TagManager:
   - Water
   - UI
   - BackGrounds
-  - 
+  - NoMotionBlur
   - Grabbable
   - Hands
   - Teleporter

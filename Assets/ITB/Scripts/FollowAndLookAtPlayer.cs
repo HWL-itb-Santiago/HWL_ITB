@@ -2,6 +2,8 @@ using System;
 using UnityEngine;
 using DG.Tweening;
 using System.Collections;
+using UnityEditor;
+using UnityEngine.XR.Interaction.Toolkit.Inputs;
 
 namespace UnityEngine.XR.Interaction.Toolkit.UI
 {
@@ -12,10 +14,19 @@ namespace UnityEngine.XR.Interaction.Toolkit.UI
     /// This component ensures the Canvas remains visible to the player by keeping
     /// it at a configurable distance and height, and smoothly rotating it to face the player.
     /// </remarks>
-    [AddComponentMenu("XR/UI/Canvas Follow and Look At Player")]
+    [AddComponentMenu("XR/UI/Follow and Look At Player")]
     [HelpURL("https://docs.unity3d.com/ScriptReference/Transform.html")]
-    public class CanvasFollowAndLookAtPlayer : MonoBehaviour
+    public class FollowAndLookAtPlayer : MonoBehaviour
     {
+        private bool IsFloating = true;
+        private Vector3 targetPosition;
+        private float InitialPosition;
+
+        public float m_InitialPosition
+        {
+            get => InitialPosition;
+            set => InitialPosition = value;
+        }
         [Header("References")]
         [SerializeField, Tooltip("Reference to the player's camera (usually the main camera).")]
         private Transform m_PlayerCamera;
@@ -90,7 +101,20 @@ namespace UnityEngine.XR.Interaction.Toolkit.UI
             get => m_RotationSpeed;
             set => m_RotationSpeed = Mathf.Max(0, value);
         }
-
+        [SerializeField]
+        private float m_FloatingSpeed;
+        public float FloatingSpeed
+        {
+            get => m_FloatingSpeed;
+            set => m_FloatingSpeed = Mathf.Max(0, value);
+        }
+        [SerializeField]
+        private float m_FloatingDistance;
+        public float FloatingDistance
+        {
+            get => m_FloatingDistance;
+            set => m_FloatingDistance = value;
+        }
         [Header("General Settings")]
         [SerializeField, Tooltip("Enable or disable position following.")]
         private bool m_EnablePositionFollowing = true;
@@ -129,24 +153,68 @@ namespace UnityEngine.XR.Interaction.Toolkit.UI
                     Debug.LogWarning("Player Camera is not assigned, and no Main Camera is found.");
                 }
             }
+
+            if (m_FollowSpeed <= 0)
+            {
+                Debug.LogWarning("FollowSpeed must be greater than 0. Setting to default (1).");
+                m_FollowSpeed = 1f;
+            }
+
+            if (m_RotationSpeed <= 0)
+            {
+                Debug.LogWarning("RotationSpeed must be greater than 0. Setting to default (1).");
+                m_RotationSpeed = 1f;
+            }
         }
+
 
         protected virtual void Start()
         {
-            StartCoroutine(floatingAnimation());
+
+            FloatingAnimation();
         }
         /// <summary>
-        /// Called every frame to update the Canvas position and rotation.
+        /// Called every frame to update the position and rotation.
         /// </summary>
         protected virtual void LateUpdate()
         {
             if (m_PlayerCamera == null) return;
 
-            if (m_EnablePositionFollowing)
+            // Solo actualiza posición si está habilitada y la distancia es significativa
+            if (m_EnablePositionFollowing && NeedsPositionUpdate())
                 UpdatePosition();
 
-            if (m_EnableRotationFollowing)
+            // Solo actualiza rotación si está habilitada y hay un cambio necesario
+            if (m_EnableRotationFollowing && NeedsRotationUpdate())
                 UpdateRotation();
+
+        }
+
+        /// <summary>
+        /// Verifica si la posición necesita actualizarse.
+        /// </summary>
+        private bool NeedsPositionUpdate()
+        {
+            Vector3 targetPos = m_PlayerCamera.position + m_PlayerCamera.forward * m_FollowDistance;
+            targetPos.y = m_PlayerCamera.position.y + m_FollowHeight;
+
+            return Vector3.Distance(transform.position, targetPos) > Mathf.Epsilon;
+        }
+
+        /// <summary>
+        /// Verifica si la rotación necesita actualizarse.
+        /// </summary>
+        private bool NeedsRotationUpdate()
+        {
+            Vector3 directionToPlayer = m_PlayerCamera.position - transform.position;
+            if (m_RotateOnlyY)
+                directionToPlayer.y = 0;
+
+            if (directionToPlayer.sqrMagnitude < Mathf.Epsilon)
+                return false;
+
+            Quaternion targetRot = Quaternion.LookRotation(-directionToPlayer.normalized);
+            return Quaternion.Angle(transform.rotation, targetRot) > Mathf.Epsilon;
         }
 
         /// <summary>
@@ -154,11 +222,13 @@ namespace UnityEngine.XR.Interaction.Toolkit.UI
         /// </summary>
         protected virtual void UpdatePosition()
         {
-            Vector3 targetPosition = m_PlayerCamera.position + m_PlayerCamera.forward * m_FollowDistance;
+            targetPosition = m_PlayerCamera.position + m_PlayerCamera.forward * m_FollowDistance;
             targetPosition.y = m_PlayerCamera.position.y + m_FollowHeight;
 
-            transform.DOMoveX(targetPosition.x, 1 / m_FollowSpeed).SetEase(Ease.InOutSine);
-            transform.DOMoveZ(targetPosition.z, 1 / m_FollowSpeed).SetEase(Ease.InOutSine);
+            transform.DOMove(targetPosition, 1 / m_FollowSpeed).SetEase(Ease.InOutSine);
+            //transform.DOMoveX(targetPosition.x, 1 / m_FollowSpeed).SetEase(Ease.InOutSine);
+            //transform.DOMoveZ(targetPosition.z, 1 / m_FollowSpeed).SetEase(Ease.InOutSine);
+
             //transform.position = Vector3.Lerp(transform.position, targetPosition, Time.deltaTime * m_FollowSpeed);
         }
 
@@ -175,13 +245,18 @@ namespace UnityEngine.XR.Interaction.Toolkit.UI
             if (directionToPlayer.sqrMagnitude < Mathf.Epsilon) return;
 
             Quaternion targetRotation = Quaternion.LookRotation(-directionToPlayer.normalized);
-            transform.DORotate(targetRotation.eulerAngles, 1 /  m_RotationSpeed).SetEase(Ease.InOutSine);
+            transform.DORotateQuaternion(targetRotation, 1 / m_RotationSpeed).SetEase(Ease.InOutSine);
         }
 
-        public IEnumerator floatingAnimation()
+
+        public void FloatingAnimation()
         {
-            transform.DOMoveY(transform.position.y + 0.02f, 5).SetEase(Ease.InOutSine).SetLoops(-1, LoopType.Yoyo);
-            yield return null;
+            Vector3 localScale = new Vector3(transform.localScale.x, transform.localScale.y, transform.localScale.z);
+
+            // Configura la animación flotante
+            transform.DOScale(localScale * m_FloatingDistance, 1 / m_FloatingSpeed)
+                .SetEase(Ease.InOutSine)
+                .SetLoops(-1, LoopType.Yoyo);
         }
     }
 }
